@@ -4,50 +4,50 @@
  * @flow
  */
 
-import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import React, { Component } from "react";
+import { AppRegistry, StyleSheet, Text, View } from "react-native";
+
+const FBSDK = require("react-native-fbsdk");
+const { LoginButton, AccessToken, LoginManager } = FBSDK;
 
 export default class convenience extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
+      <View>
+        <LoginButton
+          publishPermissions={["publish_actions"]}
+          onLoginFinished={(error, result) => {
+            if (error) {
+              alert("login has error: " + result.error);
+            } else if (result.isCancelled) {
+              alert("login is cancelled.");
+            } else {
+              AccessToken.getCurrentAccessToken().then(data => {
+                alert(data.accessToken.toString());
+              });
+            }
+          }}
+          onLogoutFinished={() => alert("logout.")}
+        />
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+LoginManager.logInWithReadPermissions(["public_profile"]).then(
+  function(result) {
+    if (result.isCancelled) {
+      alert("Login cancelled");
+    } else {
+      alert(
+        "Login success with permissions: " +
+          result.grantedPermissions.toString()
+      );
+    }
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+  function(error) {
+    alert("Login fail with error: " + error);
+  }
+);
 
-AppRegistry.registerComponent('convenience', () => convenience);
+AppRegistry.registerComponent("convenience", () => convenience);
