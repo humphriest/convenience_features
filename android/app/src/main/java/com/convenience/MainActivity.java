@@ -1,6 +1,8 @@
 package com.convenience;
 
 import com.facebook.react.ReactActivity;
+import com.tkporter.sendsms.SendSMSPackage;
+import android.content.Intent;
 
 public class MainActivity extends ReactActivity {
 
@@ -12,4 +14,9 @@ public class MainActivity extends ReactActivity {
     protected String getMainComponentName() {
         return "convenience";
     }
+    @Override
+public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	//probably some other stuff here
+	SendSMSPackage.getInstance().onActivityResult(requestCode, resultCode, data);
+}
 }
