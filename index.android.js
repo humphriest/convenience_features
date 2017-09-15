@@ -17,7 +17,40 @@ import {
 const width = Dimensions.get("window").width;
 import SendSMS from "react-native-sms";
 import SmsAndroid from "react-native-get-sms-android";
+
+import SmsListener from "react-native-android-sms-listener";
 var temp;
+
+let subscription = SmsListener.addListener(message => {
+  let verificationCodeRegex = /Your verification code: ([\d]{4})/;
+  console.info("message", message);
+
+  if (verificationCodeRegex.test(message.body)) {
+    console.log(message.body);
+
+    let verificationCode = message.body.match(verificationCodeRegex)[1];
+
+    console.log("result", verificationCode);
+    /*YourPhoneVerificationApi.verifyPhoneNumber(
+      message.originatingAddress,
+      verificationCode
+    ).then(verifiedSuccessfully => {
+      if (verifiedSuccessfully) {
+        subscription.remove();
+        console.info("success");
+        return;
+      }
+
+      if (__DEV__) {
+        console.info(
+          "Failed to verify phone `%s` using code `%s`",
+          message.originatingAddress,
+          verificationCode
+        );
+      }
+    });*/
+  }
+});
 export default class convenience extends Component {
   constructor(props) {
     super(props);
@@ -54,7 +87,7 @@ export default class convenience extends Component {
   validate() {
     SendSMS.send(
       {
-        body: "9999",
+        body: "Your verification code: 9999",
         recipients: [this.state.text],
         successTypes: ["sent", "queued"]
       },
@@ -69,14 +102,60 @@ export default class convenience extends Component {
         );
       }
     );
+
+    let subscription = SmsListener.addListener(message => {
+      let verificationCodeRegex = /Your verification code: ([\d]{4})/;
+      console.info("message", message);
+
+      if (verificationCodeRegex.test(message.body)) {
+        console.log(message.body);
+
+        let verificationCode = message.body.match(verificationCodeRegex)[1];
+
+        console.log("result", verificationCode);
+      }
+    });
   }
 
   read() {
+    console.log("hello");
+    SmsListener.addListener(message => {
+      console.info("message", message);
+    });
+
+    console.log("goodbye");
+
+    let subscription = SmsListener.addListener(message => {
+      let verificationCodeRegex = /Your verification code: ([\d]{6})/;
+
+      if (verificationCodeRegex.test(message.body)) {
+        let verificationCode = message.body.match(verificationCodeRegex)[1];
+
+        YourPhoneVerificationApi.verifyPhoneNumber(
+          message.originatingAddress,
+          verificationCode
+        ).then(verifiedSuccessfully => {
+          if (verifiedSuccessfully) {
+            subscription.remove();
+            return;
+          }
+
+          if (__DEV__) {
+            console.info(
+              "Failed to verify phone `%s` using code `%s`",
+              message.originatingAddress,
+              verificationCode
+            );
+          }
+        });
+      }
+    });
+    /*let verificationCodeRegex = /Your verification code: ([\d]{4})/
     var filter = {
       box: "sent", // 'inbox' (default), 'sent', 'draft', 'outbox', 'failed', 'queued', and '' for all
 
       // address: this.state.text,
-      body: "9999",
+      body: verificationCodeRegex,
       indexFrom: 0, // start from index 0
       maxCount: 1 // count of SMS to return each time
     };
@@ -99,6 +178,7 @@ export default class convenience extends Component {
       code: temp
     });
     console.log("code:", this.state.code);
+  }*/
   }
 }
 
